@@ -881,6 +881,54 @@ header {
   color: var(--accent);
 }
 
+.tabata-generate {
+  display: flex;
+  gap: .4rem;
+  margin-bottom: .8rem;
+}
+
+.tabata-generate input {
+  flex: 1;
+  padding: .5rem .7rem;
+  background: var(--bg);
+  border: 1px solid var(--brd);
+  border-radius: var(--rs);
+  color: var(--t1);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .75rem;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.tabata-generate input:focus {
+  border-color: var(--accent);
+}
+
+.tabata-generate input::placeholder {
+  color: var(--t3);
+  font-size: .7rem;
+}
+
+.tabata-generate button {
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--rs);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+  flex-shrink: 0;
+}
+
+.tabata-generate button:hover {
+  background: var(--accent2);
+}
+
 .tabata-slots {
   flex: 1;
   display: flex;

@@ -37,6 +37,63 @@ let currentWorkoutName = null;
 // LocalStorage key for saved workouts
 const TABATA_STORAGE_KEY = 'flexdb_tabata_workouts';
 
+// Keyword mappings for prompt parsing
+const PROMPT_KEYWORDS = {
+  muscles: {
+    'chest': ['chest', 'pec', 'pecs', 'pectoral'],
+    'back': ['back', 'lats', 'lat'],
+    'shoulders': ['shoulder', 'shoulders', 'delt', 'delts', 'deltoid'],
+    'biceps': ['bicep', 'biceps', 'bi'],
+    'triceps': ['tricep', 'triceps', 'tri'],
+    'forearms': ['forearm', 'forearms', 'grip'],
+    'abdominals': ['abs', 'ab', 'abdominals', 'core', 'stomach'],
+    'quadriceps': ['quad', 'quads', 'quadriceps', 'thigh', 'thighs'],
+    'hamstrings': ['hamstring', 'hamstrings', 'hams'],
+    'glutes': ['glute', 'glutes', 'butt', 'booty'],
+    'calves': ['calf', 'calves'],
+    'traps': ['trap', 'traps', 'trapezius'],
+    'lower back': ['lower back', 'lumbar'],
+    'middle back': ['middle back', 'mid back'],
+    'neck': ['neck'],
+    'adductors': ['adductor', 'adductors', 'inner thigh'],
+    'abductors': ['abductor', 'abductors', 'outer thigh']
+  },
+  muscleGroups: {
+    'upper body': ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms', 'traps', 'lats', 'middle back'],
+    'lower body': ['quadriceps', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors'],
+    'arms': ['biceps', 'triceps', 'forearms'],
+    'legs': ['quadriceps', 'hamstrings', 'glutes', 'calves', 'adductors', 'abductors'],
+    'push': ['chest', 'shoulders', 'triceps'],
+    'pull': ['back', 'biceps', 'lats', 'traps', 'middle back']
+  },
+  levels: {
+    'beginner': ['beginner', 'easy', 'basic', 'simple', 'newbie', 'starter'],
+    'intermediate': ['intermediate', 'medium', 'moderate'],
+    'expert': ['expert', 'advanced', 'hard', 'difficult', 'pro']
+  },
+  equipment: {
+    'body only': ['bodyweight', 'body weight', 'no equipment', 'no gear', 'home', 'body only'],
+    'dumbbell': ['dumbbell', 'dumbbells', 'db'],
+    'barbell': ['barbell', 'bb', 'bar'],
+    'kettlebells': ['kettlebell', 'kettlebells', 'kb'],
+    'cable': ['cable', 'cables'],
+    'machine': ['machine', 'machines'],
+    'bands': ['band', 'bands', 'resistance band'],
+    'medicine ball': ['medicine ball', 'med ball'],
+    'exercise ball': ['exercise ball', 'stability ball', 'swiss ball'],
+    'foam roll': ['foam roll', 'foam roller']
+  },
+  categories: {
+    'strength': ['strength', 'strong', 'muscle', 'building'],
+    'cardio': ['cardio', 'cardiovascular', 'heart', 'aerobic'],
+    'plyometrics': ['plyo', 'plyometric', 'plyometrics', 'explosive', 'jump'],
+    'stretching': ['stretch', 'stretching', 'flexibility', 'flexible'],
+    'powerlifting': ['powerlifting', 'power'],
+    'olympic weightlifting': ['olympic', 'oly', 'weightlifting'],
+    'strongman': ['strongman']
+  }
+};
+
 // DOM Helper
 const $ = (id) => document.getElementById(id);
 
@@ -340,6 +397,137 @@ function renderSavedWorkouts() {
 function updateSaveButton() {
   const btn = $('tabataSave');
   btn.disabled = TabataWorkout.length === 0;
+}
+
+/**
+ * Parse a user prompt to extract filter criteria
+ * @param {string} prompt - User's natural language prompt
+ * @returns {Object} Extracted filter criteria
+ */
+function parseTabataPrompt(prompt) {
+  const text = prompt.toLowerCase();
+  const criteria = {
+    muscles: [],
+    level: null,
+    equipment: null,
+    category: null
+  };
+
+  // Check for muscle groups first (e.g., "upper body", "legs")
+  for (const [group, muscles] of Object.entries(PROMPT_KEYWORDS.muscleGroups)) {
+    if (text.includes(group)) {
+      criteria.muscles.push(...muscles);
+    }
+  }
+
+  // Check for individual muscles
+  for (const [muscle, keywords] of Object.entries(PROMPT_KEYWORDS.muscles)) {
+    for (const keyword of keywords) {
+      if (text.includes(keyword) && !criteria.muscles.includes(muscle)) {
+        criteria.muscles.push(muscle);
+        break;
+      }
+    }
+  }
+
+  // Check for level
+  for (const [level, keywords] of Object.entries(PROMPT_KEYWORDS.levels)) {
+    for (const keyword of keywords) {
+      if (text.includes(keyword)) {
+        criteria.level = level;
+        break;
+      }
+    }
+    if (criteria.level) break;
+  }
+
+  // Check for equipment
+  for (const [equip, keywords] of Object.entries(PROMPT_KEYWORDS.equipment)) {
+    for (const keyword of keywords) {
+      if (text.includes(keyword)) {
+        criteria.equipment = equip;
+        break;
+      }
+    }
+    if (criteria.equipment) break;
+  }
+
+  // Check for category
+  for (const [cat, keywords] of Object.entries(PROMPT_KEYWORDS.categories)) {
+    for (const keyword of keywords) {
+      if (text.includes(keyword)) {
+        criteria.category = cat;
+        break;
+      }
+    }
+    if (criteria.category) break;
+  }
+
+  return criteria;
+}
+
+/**
+ * Generate a Tabata workout based on user prompt
+ * @param {string} prompt - User's natural language prompt
+ */
+function generateTabataFromPrompt(prompt) {
+  if (!prompt.trim()) return;
+
+  const criteria = parseTabataPrompt(prompt);
+  let exercises = [...EX];
+
+  // Filter by muscles
+  if (criteria.muscles.length > 0) {
+    exercises = exercises.filter(ex => {
+      const exMuscles = [...ex.primaryMuscles, ...ex.secondaryMuscles]
+        .map(m => m.toLowerCase());
+      return criteria.muscles.some(m => exMuscles.includes(m));
+    });
+  }
+
+  // Filter by level
+  if (criteria.level) {
+    exercises = exercises.filter(ex => ex.level === criteria.level);
+  }
+
+  // Filter by equipment
+  if (criteria.equipment) {
+    exercises = exercises.filter(ex =>
+      ex.equipment && ex.equipment.toLowerCase() === criteria.equipment
+    );
+  }
+
+  // Filter by category
+  if (criteria.category) {
+    exercises = exercises.filter(ex => ex.category === criteria.category);
+  }
+
+  // If not enough exercises found, show message
+  if (exercises.length === 0) {
+    alert('No exercises found matching your criteria. Try a broader search.');
+    return;
+  }
+
+  // Shuffle and pick up to 8 exercises
+  const shuffled = exercises.sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, 8);
+
+  // Clear current workout and add selected exercises
+  TabataWorkout.length = 0;
+  selected.forEach(ex => TabataWorkout.push(ex.id));
+
+  // Set the workout name based on prompt
+  currentWorkoutName = prompt.trim();
+
+  renderTabataPanel();
+  updateTabataBadge();
+  updateSaveButton();
+  loadExercises();
+
+  // Show feedback
+  if (selected.length < 8) {
+    alert(`Found ${selected.length} exercises matching your criteria.`);
+  }
 }
 
 /**
@@ -741,6 +929,18 @@ function setupEventListeners() {
       if (item) {
         loadTabataWorkout(item.dataset.id);
       }
+    }
+  });
+
+  // Tabata prompt generate button
+  $('tabataGenerate').addEventListener('click', () => {
+    generateTabataFromPrompt($('tabataPrompt').value);
+  });
+
+  // Tabata prompt enter key
+  $('tabataPrompt').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      generateTabataFromPrompt($('tabataPrompt').value);
     }
   });
 }
