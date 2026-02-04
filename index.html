@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlexDB — Exercise Browser</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">FLEX<span>DB</span></div>
+      <div class="stats-bar" id="statsBar"></div>
+      <button class="tabata-toggle" id="tabataToggle" title="Tabata Workout Builder">
+        <span class="tabata-icon">&#9201;</span>
+        <span class="tabata-count-badge" id="tabataCountBadge">0</span>
+      </button>
+    </header>
+
+    <div class="main-layout">
+      <aside class="sidebar">
+        <div class="search-box">
+          <span class="si">&#128269;</span>
+          <input type="text" id="searchInput" placeholder="Search exercises...">
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Muscle Group</div>
+          <div class="filter-options" id="muscleF"></div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Equipment</div>
+          <div class="filter-options" id="equipF"></div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Level</div>
+          <div class="filter-options" id="levelF">
+            <button class="fb" data-f="level" data-v="beginner">Beginner</button>
+            <button class="fb" data-f="level" data-v="intermediate">Intermediate</button>
+            <button class="fb" data-f="level" data-v="expert">Expert</button>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Category</div>
+          <div class="filter-options" id="catF"></div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-title">Type</div>
+          <div class="filter-options">
+            <button class="fb" data-f="mechanic" data-v="compound">Compound</button>
+            <button class="fb" data-f="mechanic" data-v="isolation">Isolation</button>
+          </div>
+        </div>
+
+        <button class="clear-btn" id="clearBtn">&#10005; Clear all filters</button>
+      </aside>
+
+      <main class="content">
+        <div class="results-header">
+          <div class="results-count" id="rc"></div>
+        </div>
+        <div id="grid" class="grid"></div>
+        <div id="pag" class="pagination"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Tabata Panel -->
+  <div class="tabata-panel" id="tabataPanel">
+    <div class="tabata-header">
+      <h3>TABATA WORKOUT</h3>
+      <span class="tabata-count" id="tabataCount">0/8</span>
+    </div>
+    <div class="tabata-slots" id="tabataSlots">
+      <!-- 8 slots rendered dynamically -->
+    </div>
+    <div class="tabata-info">
+      <span>20s work / 10s rest</span>
+      <span>4 min total</span>
+    </div>
+    <div class="tabata-actions">
+      <button class="tabata-save" id="tabataSave">Save Workout</button>
+      <button class="tabata-clear" id="tabataClear">Clear All</button>
+    </div>
+    <div class="tabata-saved" id="tabataSaved">
+      <div class="saved-header">
+        <span>Saved Workouts</span>
+      </div>
+      <div class="saved-list" id="savedList">
+        <!-- Saved workouts rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="overlay" id="ov">
+    <div class="modal">
+      <div class="modal-bar"></div>
+      <button class="modal-x" id="mx">&#10005;</button>
+      <div class="mc" id="mc"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
